@@ -2,6 +2,8 @@
 
 
 #include "ShooterCharacter.h"
+
+#include "DrawDebugHelpers.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -98,6 +100,17 @@ void AShooterCharacter::FireWeapon()
 		if (MuzzleFlash)
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, SocketTransform);
+		}
+		FHitResult HitResult;
+		const FVector Start {SocketTransform.GetLocation()};
+		const FQuat Rotation {SocketTransform.GetRotation()};
+		const FVector RotationAxis {Rotation.GetAxisX()};
+		const FVector End {Start + RotationAxis * 50'000.f};
+		GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECollisionChannel::ECC_Visibility);
+		if (HitResult.bBlockingHit)
+		{
+			DrawDebugLine(GetWorld(),Start, End, FColor::Blue, false, 2.f);
+			DrawDebugPoint(GetWorld(), HitResult.Location, 5.f, FColor::Green, false, 2.f);
 		}
 	}
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
