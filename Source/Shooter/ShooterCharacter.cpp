@@ -2,14 +2,15 @@
 
 
 #include "ShooterCharacter.h"
-
 #include "DrawDebugHelpers.h"
+#include "Engine/SkeletalMeshSocket.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
-#include "Engine/SkeletalMeshSocket.h"
+
 
 // Sets default values
 AShooterCharacter::AShooterCharacter():
@@ -24,6 +25,7 @@ BaseLookUpRate(45.f)
 	CameraBoom -> SetupAttachment(RootComponent);
 	CameraBoom -> TargetArmLength = 300.f; //camera distance
 	CameraBoom -> bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	CameraBoom ->SocketOffset = FVector(0.f, 50.f, 50.f);
 
 	//Create Follow Camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
@@ -33,10 +35,10 @@ BaseLookUpRate(45.f)
 	//Don't rotate mesh when controller rotates. Let the controller only affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
-	bUseControllerRotationYaw = false;
+	bUseControllerRotationYaw = true;
 
 	//Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; //Character moves in direction of input...
+	GetCharacterMovement()->bOrientRotationToMovement = false; //Character moves in direction of input...
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f); //... at this rate
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
@@ -106,11 +108,24 @@ void AShooterCharacter::FireWeapon()
 		const FQuat Rotation {SocketTransform.GetRotation()};
 		const FVector RotationAxis {Rotation.GetAxisX()};
 		const FVector End {Start + RotationAxis * 50'000.f};
+		FVector BeamEndPoint {End};
 		GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECollisionChannel::ECC_Visibility);
 		if (HitResult.bBlockingHit)
 		{
-			DrawDebugLine(GetWorld(),Start, End, FColor::Blue, false, 2.f);
-			DrawDebugPoint(GetWorld(), HitResult.Location, 5.f, FColor::Green, false, 2.f);
+			//DrawDebugLine(GetWorld(),Start, End, FColor::Blue, false, 2.f);
+			//DrawDebugPoint(GetWorld(), HitResult.Location, 5.f, FColor::Green, false, 2.f);
+			if (ImpactParticles)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, HitResult.Location);
+			}			
+		}
+		if (BeamParticles)
+		{
+			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BeamParticles, SocketTransform);
+			if (Beam)
+			{
+				Beam->SetVectorParameter(FName("Target"), BeamEndPoint);
+			}
 		}
 	}
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
