@@ -41,5 +41,9 @@ private:
 	//Offset yaw used for strafing
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Movement, meta = (AllowPrivateAccess = "true"))
 	float MovementOffsetYaw;
+
+	//Offset yaw the frame before character stopped moving
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Movement, meta = (AllowPrivateAccess = "true"))
+	float LastMovementOffsetYaw;
 	
 };
