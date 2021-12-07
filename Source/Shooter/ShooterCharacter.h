@@ -32,6 +32,12 @@ protected:
 
 	bool GetBeamEndLocation (const FVector& MuzzleSocketLocation, FVector& OutBeamLocation);
 
+	// Set bAiming to true or false with button press
+	void AimingButtonPressed();
+	void AimingButtonReleased();
+
+	void CameraInterpolationZoom( float DeltaTime);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -61,13 +67,30 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Combat, meta = (AllowPrivateAccess = "true"))
 	class UAnimMontage* HipFireMontage;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Combat, meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* ImpactParticles;
 
-	//Smoke trail particles
+	//Smoke trail for bullets
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Combat, meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* BeamParticles;
+
+	//True when aiming
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Combat, meta = (AllowPrivateAccess = "true"))
+	bool bAiming;
+
+	// Default camera Field Of View value
+	float CameraDefaultFOV;
+
+	// Field Of View value for when zoomed in
+	float CameraZoomedFOV;
+
+	//Current Field Of View this frame
+	float CameraCurrentFOV;
+
+	//Interpolation speed for zooming when aiming
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Combat, meta = (AllowPrivateAccess = "true"))
+	float ZoomInterpSpeed;
 	
 public:
 	//Returns CameraBoom subobject
